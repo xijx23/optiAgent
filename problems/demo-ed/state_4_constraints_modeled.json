@@ -58,7 +58,7 @@
   },
   "meta": {
     "problem_name": "demo-ed",
-    "created_at": "2025-09-28T11:24:01Z"
+    "created_at": "2025-09-28T12:11:18Z"
   },
   "objective": {
     "description": "The goal is to maximize the number of hands that can be cleaned by producing liquid and foam hand sanitizers",
@@ -67,12 +67,12 @@
   },
   "constraints": [
     {
-      "description": "The total amount of water used for liquid and foam hand sanitizers must not exceed the total water available",
-      "formulation": "$\\text{WaterPerLiquid} \\cdot \\text{numLiquid} + \\text{WaterPerFoam} \\cdot \\text{numFoam} \\leq \\text{TotalWaterAvailable}$",
+      "description": "The total units of water used for producing liquid and foam hand sanitizers must not exceed the total water available",
+      "formulation": "$\\text{WaterPerLiquid} \\times \\text{numLiquid} + \\text{WaterPerFoam} \\times \\text{numFoam} \\leq \\text{TotalWaterAvailable}$",
       "code": null
     },
     {
-      "description": "The total amount of alcohol used for liquid and foam hand sanitizers must not exceed the total alcohol available",
+      "description": "The total units of alcohol used for producing liquid and foam hand sanitizers must not exceed the total alcohol available",
       "formulation": "$AlcoholPerLiquid \\times numLiquid + AlcoholPerFoam \\times numFoam \\leq TotalAlcoholAvailable$",
       "code": null
     },

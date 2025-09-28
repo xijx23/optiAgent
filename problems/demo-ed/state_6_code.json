@@ -62,39 +62,51 @@
   },
   "objective": {
     "description": "The goal is to maximize the number of hands that can be cleaned by producing liquid and foam hand sanitizers",
-    "formulation": null,
-    "code": null
+    "formulation": "$$\\max \\quad 30 \\cdot \\text{numLiquid} + 20 \\cdot \\text{numFoam}$$",
+    "code": "model.setObjective(30 * numLiquid + 20 * numFoam, GRB.MAXIMIZE)"
   },
   "constraints": [
     {
       "description": "The total units of water used for producing liquid and foam hand sanitizers must not exceed the total water available",
-      "formulation": null,
-      "code": null
+      "formulation": "$\\text{WaterPerLiquid} \\times \\text{numLiquid} + \\text{WaterPerFoam} \\times \\text{numFoam} \\leq \\text{TotalWaterAvailable}$",
+      "code": "model.addConstr(WaterPerLiquid * numLiquid + WaterPerFoam * numFoam <= TotalWaterAvailable)"
     },
     {
       "description": "The total units of alcohol used for producing liquid and foam hand sanitizers must not exceed the total alcohol available",
-      "formulation": null,
-      "code": null
+      "formulation": "$AlcoholPerLiquid \\times numLiquid + AlcoholPerFoam \\times numFoam \\leq TotalAlcoholAvailable$",
+      "code": "model.addConstr(AlcoholPerLiquid * numLiquid + AlcoholPerFoam * numFoam <= TotalAlcoholAvailable)"
     },
     {
       "description": "The number of foam hand sanitizers produced must be greater than the number of liquid hand sanitizers produced",
-      "formulation": null,
-      "code": null
+      "formulation": "$numFoam > numLiquid$",
+      "code": "model.addConstr(numFoam > numLiquid, name=\"foam_more_than_liquid\")"
     },
     {
       "description": "The number of liquid hand sanitizers produced must not exceed the maximum allowed production limit",
-      "formulation": null,
-      "code": null
+      "formulation": "$numLiquid \\leq MaxLiquidProduction$",
+      "code": "model.addConstr(numLiquid <= MaxLiquidProduction)"
     },
     {
       "description": "The number of liquid hand sanitizers produced must be non-negative",
-      "formulation": null,
-      "code": null
+      "formulation": "$numLiquid \\geq 0$",
+      "code": "model.addConstr(numLiquid >= 0)"
     },
     {
       "description": "The number of foam hand sanitizers produced must be non-negative",
-      "formulation": null,
-      "code": null
+      "formulation": "$numFoam \\geq 0$",
+      "code": "model.addConstr(numFoam >= 0)"
     }
-  ]
+  ],
+  "variables": {
+    "numLiquid": {
+      "definition": "Number of liquid hand sanitizers produced",
+      "type": "int",
+      "shape": []
+    },
+    "numFoam": {
+      "definition": "Number of foam hand sanitizers produced",
+      "type": "int",
+      "shape": []
+    }
+  }
 }

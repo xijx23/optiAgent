@@ -1,5 +1,4 @@
-﻿#!/usr/bin/env python3
-"""CLI pipeline for natural-language optimization modeling with OptiAgent."""
+﻿"""CLI pipeline for natural-language optimization modeling with OptiAgent."""
 
 from __future__ import annotations
 
@@ -19,6 +18,8 @@ from parameter_extraction import extract_and_store_parameters
 from problem_input import store_problem_description
 from utils import load_json, save_json
 
+
+# 文件储存位置
 STATE_0_FILE = "state_0_description.json"
 STATE_1_FILE = "state_1_params.json"
 STATE_2_FILE = "state_2_objective.json"
@@ -37,6 +38,7 @@ EXECUTION_LOG = "code_execution_output.txt"
 DATA_FILE = "data.json"
 
 
+# 解析命令行参数
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Collect problem description, extract parameters, and derive optimization objective.",
@@ -75,7 +77,7 @@ def parse_args() -> argparse.Namespace:
     )
     return parser.parse_args()
 
-
+# 读取问题描述
 def read_description_from_file(path: str | Path) -> str:
     file_path = Path(path)
     if not file_path.exists():
@@ -87,7 +89,7 @@ def read_description_from_file(path: str | Path) -> str:
         print(f"[error] 读取描述文件失败: {exc}", file=sys.stderr)
         sys.exit(2)
 
-
+# 确认是否覆盖已有文件
 def confirm_overwrite_if_needed(problem_root: Path, force: bool) -> None:
     existing_states = [STATE_0_FILE, STATE_1_FILE, STATE_2_FILE, PARAMS_JSON]
     existing_states.extend([STATE_3_FILE, CONSTRAINTS_LOG])
@@ -118,7 +120,7 @@ def main() -> int:
 
     confirm_overwrite_if_needed(problem_root, force=args.force)
 
-    # Step 1: Persist raw description (state_0)
+    # Step 1: 写入问题描述(state_0)
     try:
         state_payload = store_problem_description(
             problem_name=problem_name,
@@ -132,7 +134,7 @@ def main() -> int:
     state0_path = Path(state_payload["paths"]["initial_state"])
     state0 = load_json(state0_path)
 
-    # Step 2: Extract parameters and store state_1
+    # Step 2: 提取问题中的参数 state_1
     params_result = extract_and_store_parameters(
         Path(""),
         description=state0["description"],
@@ -143,7 +145,7 @@ def main() -> int:
     save_json(state0, state1_path)
     print("[info] 参数提取完成，结果已写入", state1_path)
 
-    # Step 3: Derive objective using Tongyi and store state_2
+    # Step 3: 调用tongyiapi提取优化目标state_2
     state = load_json(state1_path)
     objective_result = get_objective(
         state["description"],
@@ -167,7 +169,7 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    # Step 4: Extract constraints and store state_3
+    # Step 4: 提取约束条件 state_3
     state = load_json(state2_path)
     constraints_result = get_constraints(
         state["description"],
@@ -191,7 +193,7 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    # Step 5: Convert constraints to LaTeX formulations and store state_4
+    # Step 5: 建模约束 state_4
     state = load_json(state3_path)
     constraint_models = get_constraint_formulations(
         state["description"],
@@ -214,7 +216,7 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    # Step 6: Convert objective to LaTeX and store state_5
+    # Step 6: 建模目标 state_5
     state = load_json(state4_path)
     objective_modeled = get_objective_formulation(
         state["description"],
@@ -241,7 +243,7 @@ def main() -> int:
     )
 
 
-    # Step 7: Generate solver code for constraints and objective
+    # Step 7: 生成目标/约束的代码 state_6
     state = load_json(state5_path)
     code_generation = get_codes(
         state["description"],
@@ -267,7 +269,7 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    # Step 8: Assemble runnable solver script
+    # Step 8: 组装代码
     state = load_json(state6_path)
     assembly = assemble_solver_script(
         state,
@@ -276,7 +278,7 @@ def main() -> int:
     )
     print("[code-assembly]", assembly.script_path)
 
-    # Step 9: Execute generated script
+    # Step 9: 运行生成的代码
     execution_result = execute_generated_code(assembly.script_path)
     run_log_path = problem_root / EXECUTION_LOG
     run_log_path.write_text(

@@ -64,5 +64,49 @@
     "description": "The goal is to maximize the number of hands that can be cleaned by producing liquid and foam hand sanitizers",
     "formulation": null,
     "code": null
+  },
+  "constraints": [
+    {
+      "description": "The total amount of water used for liquid and foam hand sanitizers must not exceed the total water available",
+      "formulation": "$\\text{WaterPerLiquid} \\cdot \\text{numLiquid} + \\text{WaterPerFoam} \\cdot \\text{numFoam} \\leq \\text{TotalWaterAvailable}$",
+      "code": null
+    },
+    {
+      "description": "The total amount of alcohol used for liquid and foam hand sanitizers must not exceed the total alcohol available",
+      "formulation": "$AlcoholPerLiquid \\times numLiquid + AlcoholPerFoam \\times numFoam \\leq TotalAlcoholAvailable$",
+      "code": null
+    },
+    {
+      "description": "The number of foam hand sanitizers produced must be greater than the number of liquid hand sanitizers produced",
+      "formulation": "$numFoam > numLiquid$",
+      "code": null
+    },
+    {
+      "description": "The number of liquid hand sanitizers produced must not exceed the maximum allowed production limit",
+      "formulation": "$numLiquid \\leq MaxLiquidProduction$",
+      "code": null
+    },
+    {
+      "description": "The number of liquid hand sanitizers produced must be non-negative",
+      "formulation": "$numLiquid \\geq 0$",
+      "code": null
+    },
+    {
+      "description": "The number of foam hand sanitizers produced must be non-negative",
+      "formulation": "$numFoam \\geq 0$",
+      "code": null
+    }
+  ],
+  "variables": {
+    "numLiquid": {
+      "definition": "Number of liquid hand sanitizers produced",
+      "type": "int",
+      "shape": []
+    },
+    "numFoam": {
+      "definition": "Number of foam hand sanitizers produced",
+      "type": "int",
+      "shape": []
+    }
   }
 }

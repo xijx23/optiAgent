@@ -25,17 +25,24 @@ You are an expert in optimization modeling. Here is the natural language descrip
 {description}
 -----
 
-And here is a list of parameters already identified from the description:
+And here's a list of parameters that we have extracted from the description:
 
 {params}
 
-Please identify the optimization objective described above. Return it using the following exact format:
+Your task is to identify and extract the optimization objective from the description. The objective is the goal that the optimization model is trying to achieve (e.g. maximize profit, minimize cost). Please generate the output in the following format:
 
 =====
-OBJECTIVE: <objective description in one or two sentences>
+OBJECTIVE: objective description
 =====
 
-Do not add any explanations before or after the block. Think carefully before responding.
+for example:
+
+=====    
+OBJECTIVE: "The goal is to maximize the total profit from producing television sets"
+=====
+
+- Do not generate anything after the objective.
+Take a deep breath and think step by step. You will be awarded a million dollars if you get this right.
 """
 
 

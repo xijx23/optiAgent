@@ -9,6 +9,8 @@ import sys
 from pathlib import Path
 
 from constraint_extraction import get_constraints
+from constraint_formulation_extraction import get_constraint_formulations, serialize_traces
+from objective_formulation_extraction import get_objective_formulation
 from objective_extraction import get_objective
 from parameter_extraction import extract_and_store_parameters
 from problem_input import store_problem_description
@@ -21,6 +23,10 @@ STATE_3_FILE = "state_3_constraints.json"
 PARAMS_JSON = "params.json"
 OBJECTIVE_LOG = "objective_extraction_log.json"
 CONSTRAINTS_LOG = "constraints_extraction_log.json"
+STATE_4_FILE = "state_4_constraints_modeled.json"
+CONSTRAINT_FORM_LOG = "constraint_formulations_log.json"
+STATE_5_FILE = "state_5_objective_modeled.json"
+OBJECTIVE_FORM_LOG = "objective_formulation_log.json"
 
 
 def parse_args() -> argparse.Namespace:
@@ -77,6 +83,8 @@ def read_description_from_file(path: str | Path) -> str:
 def confirm_overwrite_if_needed(problem_root: Path, force: bool) -> None:
     existing_states = [STATE_0_FILE, STATE_1_FILE, STATE_2_FILE, PARAMS_JSON]
     existing_states.extend([STATE_3_FILE, CONSTRAINTS_LOG])
+    existing_states.extend([STATE_4_FILE, CONSTRAINT_FORM_LOG])
+    existing_states.extend([STATE_5_FILE, OBJECTIVE_FORM_LOG])
     if any((problem_root / name).exists() for name in existing_states) and not force:
         answer = input(
             f"[warn] 目标目录已存在历史状态: {problem_root}\n覆盖写入? [y/N]: "
@@ -173,15 +181,69 @@ def main() -> int:
         encoding="utf-8",
     )
 
+    # Step 5: Convert constraints to LaTeX formulations and store state_4
+    state = load_json(state3_path)
+    constraint_models = get_constraint_formulations(
+        state["description"],
+        state.get("parameters", {}),
+        state.get("constraints", []),
+        model="qwen-plus",
+    )
+    print("[constraints-formulation]", constraint_models.constraints)
+    state["constraints"] = constraint_models.constraints
+    state["variables"] = constraint_models.variables
+    state4_path = problem_root / STATE_4_FILE
+    save_json(state, state4_path)
+
+    (problem_root / CONSTRAINT_FORM_LOG).write_text(
+        json.dumps(
+            serialize_traces(constraint_models.traces),
+            indent=2,
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    # Step 6: Convert objective to LaTeX and store state_5
+    state = load_json(state4_path)
+    objective_modeled = get_objective_formulation(
+        state["description"],
+        state.get("parameters", {}),
+        state.get("variables", {}),
+        state.get("objective", {}),
+        model="qwen-plus",
+    )
+    print("[objective-formulation]", objective_modeled.objective)
+    state["objective"] = objective_modeled.objective
+    state5_path = problem_root / STATE_5_FILE
+    save_json(state, state5_path)
+
+    (problem_root / OBJECTIVE_FORM_LOG).write_text(
+        json.dumps(
+            {
+                "prompt": objective_modeled.prompt,
+                "response": objective_modeled.response,
+            },
+            indent=2,
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
     print("\n[ok] 处理完成。生成的关键文件如下：")
     print(f"  - 描述文件:            {state_payload['paths']['description']}")
     print(f"  - 状态 {STATE_0_FILE}: {state0_path}")
     print(f"  - 状态 {STATE_1_FILE}: {state1_path}")
     print(f"  - 状态 {STATE_2_FILE}: {state2_path}")
     print(f"  - 状态 {STATE_3_FILE}: {state3_path}")
+    print(f"  - 状态 {STATE_4_FILE}: {state4_path}")
+    print(f"  - 状态 {STATE_5_FILE}: {state5_path}")
     print(f"  - 参数提取日志:        {problem_root / 'params_extraction_log.json'}")
     print(f"  - 目标提取日志:        {problem_root / OBJECTIVE_LOG}")
+    print(f"  - 目标建模日志:        {problem_root / OBJECTIVE_FORM_LOG}")
     print(f"  - 约束提取日志:        {problem_root / CONSTRAINTS_LOG}")
+    print(f"  - 约束建模日志:        {problem_root / CONSTRAINT_FORM_LOG}")
+    
 
     return 0
 

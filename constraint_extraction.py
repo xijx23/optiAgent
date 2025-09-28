@@ -25,11 +25,30 @@ You are an expert in optimization modeling. Here is the natural language descrip
 {description}
 -----
 
-The following parameters have already been identified from the description:
+And here's a list of parameters that we have extracted from the description:
 
 {params}
 
-List every constraint that must hold in the optimization model. Return ONLY a JSON array of strings where each string describes exactly one constraint in plain language. Do not include any additional commentary or markdown.
+
+Your task is to identify and extract constraints from the description. The constraints are the conditions that must be satisfied by the variables. Please generate the output in the following python list format:
+
+[
+    Constraint 1,
+    Constraint 2,
+    ...
+]
+
+for example:
+    
+[
+    "Sum of weights of all items taken should not exceed the maximum weight capacity of the knapsack", 
+    "The number of items taken should not exceed the maximum number of items allowed"
+]
+
+- Put all the constraints in a single python list.
+- Do not generate anything after the python list.
+- Include implicit non-negativity constraints if necessary.
+Take a deep breath and think step by step. You will be awarded a million dollars if you get this right.
 """
 
 

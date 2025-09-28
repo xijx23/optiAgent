@@ -1,0 +1,11 @@
+{
+  "WaterPerLiquid": 40,
+  "AlcoholPerLiquid": 50,
+  "WaterPerFoam": 60,
+  "AlcoholPerFoam": 40,
+  "AvailableWater": 2000,
+  "AvailableAlcohol": 2100,
+  "MaxLiquidProduction": 30,
+  "HandsCleanedPerLiquid": 30,
+  "HandsCleanedPerFoam": 20
+}

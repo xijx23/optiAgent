@@ -25,13 +25,13 @@
       "shape": [],
       "value": 40
     },
-    "TotalWaterAvailable": {
+    "AvailableWater": {
       "definition": "Total units of water available for production",
       "type": "int",
       "shape": [],
       "value": 2000
     },
-    "TotalAlcoholAvailable": {
+    "AvailableAlcohol": {
       "definition": "Total units of alcohol available for production",
       "type": "int",
       "shape": [],
@@ -58,7 +58,7 @@
   },
   "meta": {
     "problem_name": "demo-ed",
-    "created_at": "2025-09-28T12:11:18Z"
+    "created_at": "2025-09-28T12:29:29Z"
   },
   "objective": {
     "description": "The goal is to maximize the number of hands that can be cleaned by producing liquid and foam hand sanitizers",
@@ -67,19 +67,19 @@
   },
   "constraints": [
     {
-      "description": "The total units of water used for producing liquid and foam hand sanitizers must not exceed the total water available",
-      "formulation": "$\\text{WaterPerLiquid} \\times \\text{numLiquid} + \\text{WaterPerFoam} \\times \\text{numFoam} \\leq \\text{TotalWaterAvailable}$",
-      "code": "model.addConstr(WaterPerLiquid * numLiquid + WaterPerFoam * numFoam <= TotalWaterAvailable)"
+      "description": "The total units of water used for producing liquid and foam hand sanitizers must not exceed the available water supply",
+      "formulation": "$\\text{WaterPerLiquid} \\cdot \\text{numLiquid} + \\text{WaterPerFoam} \\cdot \\text{numFoam} \\leq \\text{AvailableWater}$",
+      "code": "model.addConstr(WaterPerLiquid * numLiquid + WaterPerFoam * numFoam <= AvailableWater)"
     },
     {
-      "description": "The total units of alcohol used for producing liquid and foam hand sanitizers must not exceed the total alcohol available",
-      "formulation": "$AlcoholPerLiquid \\times numLiquid + AlcoholPerFoam \\times numFoam \\leq TotalAlcoholAvailable$",
-      "code": "model.addConstr(AlcoholPerLiquid * numLiquid + AlcoholPerFoam * numFoam <= TotalAlcoholAvailable)"
+      "description": "The total units of alcohol used for producing liquid and foam hand sanitizers must not exceed the available alcohol supply",
+      "formulation": "$AlcoholPerLiquid \\times numLiquid + AlcoholPerFoam \\times numFoam \\leq AvailableAlcohol$",
+      "code": "model.addConstr(AlcoholPerLiquid * numLiquid + AlcoholPerFoam * numFoam <= AvailableAlcohol)"
     },
     {
       "description": "The number of foam hand sanitizers produced must be greater than the number of liquid hand sanitizers produced",
       "formulation": "$numFoam > numLiquid$",
-      "code": "model.addConstr(numFoam > numLiquid, name=\"foam_more_than_liquid\")"
+      "code": "model.addConstr(numFoam >= numLiquid + 1, name=\"foam_more_than_liquid\")"
     },
     {
       "description": "The number of liquid hand sanitizers produced must not exceed the maximum allowed production limit",

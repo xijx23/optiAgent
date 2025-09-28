@@ -12,6 +12,8 @@ from constraint_extraction import get_constraints
 from constraint_formulation_extraction import get_constraint_formulations, serialize_traces as serialize_constraint_traces
 from objective_formulation_extraction import get_objective_formulation
 from code_generation import get_codes, serialize_traces as serialize_code_traces
+from code_assembly import assemble_solver_script
+from code_execution import execute_generated_code
 from objective_extraction import get_objective
 from parameter_extraction import extract_and_store_parameters
 from problem_input import store_problem_description
@@ -30,6 +32,9 @@ STATE_5_FILE = "state_5_objective_modeled.json"
 OBJECTIVE_FORM_LOG = "objective_formulation_log.json"
 STATE_6_FILE = "state_6_code.json"
 CODE_LOG = "code_generation_log.json"
+GENERATED_SCRIPT = "solve_model.py"
+EXECUTION_LOG = "code_execution_output.txt"
+DATA_FILE = "data.json"
 
 
 def parse_args() -> argparse.Namespace:
@@ -89,6 +94,7 @@ def confirm_overwrite_if_needed(problem_root: Path, force: bool) -> None:
     existing_states.extend([STATE_4_FILE, CONSTRAINT_FORM_LOG])
     existing_states.extend([STATE_5_FILE, OBJECTIVE_FORM_LOG])
     existing_states.extend([STATE_6_FILE, CODE_LOG])
+    existing_states.extend([GENERATED_SCRIPT, EXECUTION_LOG, DATA_FILE])
     if any((problem_root / name).exists() for name in existing_states) and not force:
         answer = input(
             f"[warn] 目标目录已存在历史状态: {problem_root}\n覆盖写入? [y/N]: "
@@ -234,6 +240,7 @@ def main() -> int:
         encoding="utf-8",
     )
 
+
     # Step 7: Generate solver code for constraints and objective
     state = load_json(state5_path)
     code_generation = get_codes(
@@ -260,22 +267,54 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    print("\n[ok] 处理完成。生成的关键文件如下：")
-    print(f"  - 描述文件:            {state_payload['paths']['description']}")
-    print(f"  - 状态 {STATE_0_FILE}: {state0_path}")
-    print(f"  - 状态 {STATE_1_FILE}: {state1_path}")
-    print(f"  - 状态 {STATE_2_FILE}: {state2_path}")
-    print(f"  - 状态 {STATE_3_FILE}: {state3_path}")
-    print(f"  - 状态 {STATE_4_FILE}: {state4_path}")
-    print(f"  - 状态 {STATE_5_FILE}: {state5_path}")
-    print(f"  - 状态 {STATE_6_FILE}: {state6_path}")
-    print(f"  - 参数提取日志:        {problem_root / 'params_extraction_log.json'}")
-    print(f"  - 目标提取日志:        {problem_root / OBJECTIVE_LOG}")
-    print(f"  - 目标建模日志:        {problem_root / OBJECTIVE_FORM_LOG}")
-    print(f"  - 约束提取日志:        {problem_root / CONSTRAINTS_LOG}")
-    print(f"  - 约束建模日志:        {problem_root / CONSTRAINT_FORM_LOG}")
-    print(f"  - 代码生成日志:        {problem_root / CODE_LOG}")
-    
+    # Step 8: Assemble runnable solver script
+    state = load_json(state6_path)
+    assembly = assemble_solver_script(
+        state,
+        problem_root,
+        script_name=GENERATED_SCRIPT,
+    )
+    print("[code-assembly]", assembly.script_path)
+
+    # Step 9: Execute generated script
+    execution_result = execute_generated_code(assembly.script_path)
+    run_log_path = problem_root / EXECUTION_LOG
+    run_log_path.write_text(
+        json.dumps(
+            {
+                "returncode": execution_result.returncode,
+                "stdout": execution_result.stdout,
+                "stderr": execution_result.stderr,
+            },
+            indent=2,
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    status_tag = "success" if execution_result.succeeded else f"failure (returncode={execution_result.returncode})"
+    print(f"[code-execution] {status_tag}")
+
+    print()
+    print("[ok] ������ɡ����ɵĹؼ��ļ����£�")
+    print(f"  - �����ļ�:            {state_payload['paths']['description']}")
+    print(f"  - ״̬ {STATE_0_FILE}: {state0_path}")
+    print(f"  - ״̬ {STATE_1_FILE}: {state1_path}")
+    print(f"  - ״̬ {STATE_2_FILE}: {state2_path}")
+    print(f"  - ״̬ {STATE_3_FILE}: {state3_path}")
+    print(f"  - ״̬ {STATE_4_FILE}: {state4_path}")
+    print(f"  - ״̬ {STATE_5_FILE}: {state5_path}")
+    print(f"  - ״̬ {STATE_6_FILE}: {state6_path}")
+    print(f"  - �����ṹ����:        {assembly.data_path}")
+    print(f"  - ���ɵĽű�:        {assembly.script_path}")
+    print(f"  - ������ȡ��־:        {problem_root / 'params_extraction_log.json'}")
+    print(f"  - Ŀ����ȡ��־:        {problem_root / OBJECTIVE_LOG}")
+    print(f"  - Ŀ�꽨ģ��־:        {problem_root / OBJECTIVE_FORM_LOG}")
+    print(f"  - Լ����ȡ��־:        {problem_root / CONSTRAINTS_LOG}")
+    print(f"  - Լ����ģ��־:        {problem_root / CONSTRAINT_FORM_LOG}")
+    print(f"  - ����������־:        {problem_root / CODE_LOG}")
+    print(f"  - ��������־:        {run_log_path}")
+
+
 
     return 0
 

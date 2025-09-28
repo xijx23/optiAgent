@@ -1,0 +1,5 @@
+{
+  "returncode": 1,
+  "stdout": "",
+  "stderr": "Traceback (most recent call last):\n  File \"E:\\code\\python\\optiAgent\\problems\\demo-ed\\solve_model.py\", line 7, in <module>\n    from gurobipy import Model, GRB, quicksum\nModuleNotFoundError: No module named 'gurobipy'\n"
+}

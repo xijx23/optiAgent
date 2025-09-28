@@ -23,13 +23,13 @@
     "shape": [],
     "value": 40
   },
-  "TotalWaterAvailable": {
+  "AvailableWater": {
     "definition": "Total units of water available for production",
     "type": "int",
     "shape": [],
     "value": 2000
   },
-  "TotalAlcoholAvailable": {
+  "AvailableAlcohol": {
     "definition": "Total units of alcohol available for production",
     "type": "int",
     "shape": [],
